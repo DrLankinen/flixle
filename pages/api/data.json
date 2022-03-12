@@ -1,0 +1,34 @@
+{
+  "Interstellar": {
+    "director": [
+      "Christopher Nolan"
+    ],
+    "cast": [
+      "Matthew McConaughey",
+      "Anne Hathaway"
+    ],
+    "year": 2012,
+    "genre": [
+      "action",
+      "scifi"
+    ],
+    "imdb": 8.4,
+    "rating": "PG-13"
+  },
+  "Tenet": {
+    "director": [
+      "Christopher Nolan"
+    ],
+    "cast": [
+      "Matthew McConaughey",
+      "Anne Hathaway"
+    ],
+    "year": 2019,
+    "genre": [
+      "action",
+      "scifi"
+    ],
+    "imdb": 8,
+    "rating": "PG-13"
+  }
+}
