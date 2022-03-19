@@ -1,9 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CorrectData } from "../pages/api/hello";
 import Dropdown from "./Dropdown";
 import Modal from "simple-react-modal";
 import Image from "next/image";
 import closeIcon from "/images/close-icon.svg";
+import MOVIE_OF_THE_DAY_NAMES from "../pages/api/dailies.json";
+
+function getRandomInt() {
+  return Math.floor(Math.random() * MOVIE_OF_THE_DAY_NAMES.length);
+}
 
 export interface Guess {
   guess: string;
@@ -11,16 +16,14 @@ export interface Guess {
   properties: CorrectData;
 }
 
-const date = new Date();
-const guessesKey = `guesses_${date.getDate()}-${
-  date.getMonth() + 1
-}-${date.getFullYear()}`;
+const GUESSES_KEY = "guesses";
+const MOTD_KEY = "motd";
 
 function Game() {
   const [guesses, setGuesses] = useState<Guess[]>(() => {
     // Load guesses from local storage
     if (typeof window !== "undefined") {
-      const storedGuesses = localStorage.getItem(guessesKey);
+      const storedGuesses = localStorage.getItem(GUESSES_KEY);
       if (!storedGuesses) {
         return [];
       }
@@ -33,13 +36,37 @@ function Game() {
   useEffect(() => {
     // store guesses to local storage
     if (typeof window !== "undefined") {
-      localStorage.setItem(guessesKey, JSON.stringify(guesses));
+      localStorage.setItem(GUESSES_KEY, JSON.stringify(guesses));
     }
     const guessedCorrectly = guesses.some((guess) => guess.correct);
     if (guessedCorrectly) {
       setIsCorrectGuessModalOpen(true);
     }
   }, [guesses]);
+
+  const [motdIndex, setMotdIndex] = useState(() => {
+    // Load motd from local storage
+    if (typeof window !== "undefined") {
+      const storedMotd = localStorage.getItem(MOTD_KEY);
+      if (!storedMotd) {
+        return getRandomInt();
+      }
+      return parseInt(storedMotd);
+    }
+    return getRandomInt();
+  });
+
+  useEffect(() => {
+    // store motd to local storage
+    if (typeof window !== "undefined") {
+      localStorage.setItem(MOTD_KEY, motdIndex.toString());
+    }
+  }, [motdIndex]);
+
+  const resetGame = useCallback(() => {
+    setMotdIndex(getRandomInt());
+    setGuesses([]);
+  }, []);
 
   const guessedCorrectly = guesses.some((guess) => guess.correct);
 
@@ -76,7 +103,22 @@ function Game() {
           addGuess={(newGuess: Guess) =>
             setGuesses((prev) => [newGuess, ...prev])
           }
+          motdIndex={motdIndex}
         />
+      )}
+
+      {guesses.length >= 6 && (
+        <>
+          <button
+            onClick={resetGame}
+            style={{ color: "orange", backgroundColor: "blue" }}
+          >
+            Reset me!
+          </button>
+          {!guessedCorrectly && (
+            <p>Correct anwer is: {MOVIE_OF_THE_DAY_NAMES[motdIndex]}</p>
+          )}
+        </>
       )}
 
       <div className="guesses-section wf-section">

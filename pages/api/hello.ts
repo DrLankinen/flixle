@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Guess } from "../../components/Game";
 import DATA_JSON from "./data.json";
+import MOVIE_OF_THE_DAY_NAMES from "./dailies.json";
 
 interface Data {
   director: string[];
@@ -26,17 +27,7 @@ export type CorrectData = {
   rating: [string, CLOSE_FAR_CORRECT];
 };
 
-const MOVIE_OF_THE_DAY_INDEX = 0;
-
 const DATA: Json = DATA_JSON;
-const MOVIE_OF_THE_DAY_NAME = (() => {
-  const movieNames = Object.keys(DATA);
-  return movieNames[MOVIE_OF_THE_DAY_INDEX];
-})();
-const MOVIE_OF_THE_DAY_DATA = (() => {
-  const movieData = Object.values(DATA);
-  return movieData[MOVIE_OF_THE_DAY_INDEX];
-})();
 
 const intersection = (a: string[], b: string[]) =>
   a.filter((i) => b.includes(i));
@@ -45,7 +36,11 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<Omit<Guess, "guess"> | string>
 ) {
-  const { guess } = req.query;
+  const { guess, motdIndex: _motdIndex } = req.query;
+  const motdIndex = parseInt(_motdIndex as string);
+
+  const movieOfTheDayName = MOVIE_OF_THE_DAY_NAMES[motdIndex];
+  const movieOfTheDayData = DATA[movieOfTheDayName];
 
   // TODO: remove as string and use body type to not have string[] as one option
   const guessedMovieData = DATA[guess as string] as Data;
@@ -63,14 +58,14 @@ export default function handler(
     rating: [guessedMovieData["rating"], "CORRECT"],
   };
 
-  const isCorrectGuess = guess === MOVIE_OF_THE_DAY_NAME;
+  const isCorrectGuess = guess === movieOfTheDayName;
   if (isCorrectGuess) {
     res.status(200).json({ correct: true, properties: data });
   } else {
     // director
     const directorIntersection = intersection(
       guessedMovieData["director"],
-      MOVIE_OF_THE_DAY_DATA["director"]
+      movieOfTheDayData["director"]
     );
     if (directorIntersection.length) {
       data["director"][0] = directorIntersection;
@@ -82,7 +77,7 @@ export default function handler(
     // cast
     const castIntersection = intersection(
       guessedMovieData["cast"],
-      MOVIE_OF_THE_DAY_DATA["cast"]
+      movieOfTheDayData["cast"]
     );
     if (castIntersection.length) {
       data["cast"][0] = castIntersection;
@@ -92,7 +87,7 @@ export default function handler(
     }
 
     // year
-    const yearDiff = guessedMovieData["year"] - MOVIE_OF_THE_DAY_DATA["year"];
+    const yearDiff = guessedMovieData["year"] - movieOfTheDayData["year"];
     if (yearDiff > 0) {
       data["year"][1] = ["DOWN", Math.abs(yearDiff) <= 3 ? "CLOSE" : "FAR"];
     } else if (yearDiff < 0) {
@@ -104,7 +99,7 @@ export default function handler(
     // genre
     const genreIntersection = intersection(
       guessedMovieData["genre"],
-      MOVIE_OF_THE_DAY_DATA["genre"]
+      movieOfTheDayData["genre"]
     );
     if (genreIntersection.length) {
       data["genre"][0] = genreIntersection;
@@ -116,7 +111,7 @@ export default function handler(
     // imdb
     const imdbDiff =
       parseFloat(guessedMovieData["imdb"]) -
-      parseFloat(MOVIE_OF_THE_DAY_DATA["imdb"]);
+      parseFloat(movieOfTheDayData["imdb"]);
     if (imdbDiff > 0) {
       data["imdb"][1] = ["DOWN", Math.abs(imdbDiff) <= 1 ? "CLOSE" : "FAR"];
     } else if (imdbDiff < 0) {
@@ -127,7 +122,7 @@ export default function handler(
 
     // rating
     const guessedRating = guessedMovieData["rating"];
-    const targetRating = MOVIE_OF_THE_DAY_DATA["rating"];
+    const targetRating = movieOfTheDayData["rating"];
     if (guessedRating === targetRating) {
       data["rating"][1] = "CORRECT";
     } else {

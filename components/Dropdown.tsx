@@ -7,10 +7,11 @@ let getOptions: ReturnType<typeof setTimeout> | null = null;
 
 interface Props {
   addGuess: (newGuess: Guess) => void;
+  motdIndex: number;
 }
 
 function Dropdown(props: Props) {
-  const { addGuess } = props;
+  const { addGuess, motdIndex } = props;
 
   const [inputText, setInputText] = useState("");
   const [selectedDropdown, setSelectedDropdown] = useState(0);
@@ -19,7 +20,9 @@ function Dropdown(props: Props) {
   const makeGuess = useCallback(async () => {
     if (dropdownOptions) {
       const guess = dropdownOptions[selectedDropdown];
-      const res = await fetch(`/api/hello?guess=${guess}`);
+      const res = await fetch(
+        `/api/hello?guess=${guess}&motdIndex=${motdIndex}`
+      );
       console.log("res.status:", res.status);
       if (res.status == 403) {
         throw Error("Error making guess");
@@ -28,7 +31,7 @@ function Dropdown(props: Props) {
       addGuess({ guess, ...data });
       setInputText("");
     }
-  }, [dropdownOptions, selectedDropdown, addGuess]);
+  }, [dropdownOptions, selectedDropdown, addGuess, motdIndex]);
 
   useEffect(() => {
     const keylistener = (e: KeyboardEvent) => {
