@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { CorrectData } from "../pages/api/hello";
 import Dropdown from "./Dropdown";
+import Modal from "simple-react-modal";
+import Image from "next/image";
+import closeIcon from "/images/close-icon.svg";
 
 export interface Guess {
   guess: string;
@@ -25,11 +28,16 @@ function Game() {
     }
     return [];
   });
+  const [isCorrectGuessModalOpen, setIsCorrectGuessModalOpen] = useState(false);
 
   useEffect(() => {
     // store guesses to local storage
     if (typeof window !== "undefined") {
       localStorage.setItem(guessesKey, JSON.stringify(guesses));
+    }
+    const guessedCorrectly = guesses.some((guess) => guess.correct);
+    if (guessedCorrectly) {
+      setIsCorrectGuessModalOpen(true);
     }
   }, [guesses]);
 
@@ -37,6 +45,32 @@ function Game() {
 
   return (
     <>
+      <Modal
+        show={isCorrectGuessModalOpen}
+        containerStyle={{
+          backgroundColor: "#1a1a1a",
+          maxWidth: 700,
+          maxHeight: 500,
+          width: "90%",
+          height: "90%",
+          padding: 30,
+        }}
+        closeOnOuterClick
+        onClose={() => setIsCorrectGuessModalOpen(false)}
+      >
+        <div className="game-complete-modal">
+          <h4 className="modal-header">
+            You guessed the flixle, Interstellar! 🎉
+          </h4>
+          <div
+            style={{ cursor: "pointer" }}
+            onClick={() => setIsCorrectGuessModalOpen(false)}
+          >
+            <Image src={closeIcon} loading="lazy" width="24" alt="close icon" />
+          </div>
+        </div>
+      </Modal>
+
       {!guessedCorrectly && guesses.length < 6 && (
         <Dropdown
           addGuess={(newGuess: Guess) =>
