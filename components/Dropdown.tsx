@@ -92,6 +92,7 @@ function Dropdown(props: Props) {
           dropdownOptions.map((text, index) => (
             <div
               key={text}
+              onClick={() => setSelectedDropdown(index)}
               className="selectable"
               style={
                 selectedDropdown === index
