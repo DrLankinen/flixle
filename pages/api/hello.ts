@@ -1,129 +1,156 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import datajson from './data.json'
+import type { NextApiRequest, NextApiResponse } from "next";
+import { Guess } from "../../components/Game";
+import DATA_JSON from "./data.json";
 
 interface Data {
-  "director": string[],
-  "cast": string[],
-  "year": number,
-  "genre": string[],
-  "imdb": number,
-  "rating": string
+  director: string[];
+  cast: string[];
+  year: number;
+  genre: string[];
+  imdb: string;
+  rating: string;
 }
 interface Json {
-  [name: string]: Data
+  [name: string]: Data;
 }
 
-type UP_DOWN_CORRECT = "UP" | "DOWN" | "CORRECT"
-type CLOSE_FAR_CORRECT = "CLOSE" | "FAR" | "CORRECT"
+type UP_DOWN_CORRECT = "UP" | "DOWN" | "CORRECT";
+type CLOSE_FAR_CORRECT = "CLOSE" | "FAR" | "CORRECT";
 
-type CorrectData = {
-  "director"?: string[],
-  "cast"?: string[],
-  "year"?: [UP_DOWN_CORRECT, CLOSE_FAR_CORRECT],
-  "genre"?: string[],
-  "imdb"?: [UP_DOWN_CORRECT, CLOSE_FAR_CORRECT],
-  "rating"?: [boolean, CLOSE_FAR_CORRECT]
-}
+export type CorrectData = {
+  director: [string[], boolean];
+  cast: [string[], boolean];
+  year: [number, [UP_DOWN_CORRECT, CLOSE_FAR_CORRECT]];
+  genre: [string[], boolean];
+  imdb: [number, [UP_DOWN_CORRECT, CLOSE_FAR_CORRECT]];
+  rating: [string, CLOSE_FAR_CORRECT];
+};
 
-const MOVIE_OF_THE_DAY_INDEX = 0
+const MOVIE_OF_THE_DAY_INDEX = 0;
 
-const DATA: Json = datajson
+const DATA: Json = DATA_JSON;
 const MOVIE_OF_THE_DAY_NAME = (() => {
-  const movieNames = Object.keys(DATA)
-  return movieNames[MOVIE_OF_THE_DAY_INDEX]
-})()
+  const movieNames = Object.keys(DATA);
+  return movieNames[MOVIE_OF_THE_DAY_INDEX];
+})();
 const MOVIE_OF_THE_DAY_DATA = (() => {
-  const movieData = Object.values(DATA)
-  return movieData[MOVIE_OF_THE_DAY_INDEX]
-})()
+  const movieData = Object.values(DATA);
+  return movieData[MOVIE_OF_THE_DAY_INDEX];
+})();
 
-const intersection = (a: string[], b: string[]) => (
-  a.filter(i => b.includes(i))
-)
+const intersection = (a: string[], b: string[]) =>
+  a.filter((i) => b.includes(i));
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse<{ success: boolean, data?: CorrectData }>
+  res: NextApiResponse<Omit<Guess, "guess"> | string>
 ) {
-  const { guess } = req.query
+  const { guess } = req.query;
 
-  const isCorrectGuess = guess === MOVIE_OF_THE_DAY_NAME
+  // TODO: remove as string and use body type to not have string[] as one option
+  const guessedMovieData = DATA[guess as string] as Data;
+  if (!guessedMovieData) {
+    res.status(403).send("error");
+    return;
+  }
+
+  const data: CorrectData = {
+    director: [guessedMovieData["director"], true],
+    cast: [guessedMovieData["cast"], true],
+    year: [guessedMovieData["year"], ["CORRECT", "CORRECT"]],
+    genre: [guessedMovieData["genre"], true],
+    imdb: [parseFloat(guessedMovieData["imdb"]), ["CORRECT", "CORRECT"]],
+    rating: [guessedMovieData["rating"], "CORRECT"],
+  };
+
+  const isCorrectGuess = guess === MOVIE_OF_THE_DAY_NAME;
   if (isCorrectGuess) {
-    res.status(200).json({ success: true })
+    res.status(200).json({ correct: true, properties: data });
   } else {
-    // TODO: remove as string and use body type to not have string[] as one option
-    const guessedMovieData = DATA[guess as string] as Data
-    if (!guessedMovieData) {
-      res.status(200).json({ success: false })
-      return
-    }
-    console.log('guessedMovieData', guessedMovieData)
-    const data: CorrectData = {}
-
     // director
-    const directorIntersection = intersection(guessedMovieData["director"], MOVIE_OF_THE_DAY_DATA["director"])
+    const directorIntersection = intersection(
+      guessedMovieData["director"],
+      MOVIE_OF_THE_DAY_DATA["director"]
+    );
     if (directorIntersection.length) {
-      data["director"] = directorIntersection
+      data["director"][0] = directorIntersection;
+      data["director"][1] = true;
+    } else {
+      data["director"][1] = false;
     }
 
     // cast
-    const castIntersection = intersection(guessedMovieData["cast"], MOVIE_OF_THE_DAY_DATA["cast"])
+    const castIntersection = intersection(
+      guessedMovieData["cast"],
+      MOVIE_OF_THE_DAY_DATA["cast"]
+    );
     if (castIntersection.length) {
-      data["cast"] = castIntersection
+      data["cast"][0] = castIntersection;
+      data["cast"][1] = true;
+    } else {
+      data["cast"][1] = false;
     }
 
     // year
-    const yearDiff = guessedMovieData["year"] - MOVIE_OF_THE_DAY_DATA["year"]
+    const yearDiff = guessedMovieData["year"] - MOVIE_OF_THE_DAY_DATA["year"];
     if (yearDiff > 0) {
-      data["year"] = ["DOWN", Math.abs(yearDiff) <= 3 ? "CLOSE" : "FAR"]
+      data["year"][1] = ["DOWN", Math.abs(yearDiff) <= 3 ? "CLOSE" : "FAR"];
     } else if (yearDiff < 0) {
-      data["year"] = ["UP", Math.abs(yearDiff) <= 3 ? "CLOSE" : "FAR"]
+      data["year"][1] = ["UP", Math.abs(yearDiff) <= 3 ? "CLOSE" : "FAR"];
     } else {
-      data["year"] = ["CORRECT", "CORRECT"]
+      data["year"][1] = ["CORRECT", "CORRECT"];
     }
 
     // genre
-    const genreIntersection = intersection(guessedMovieData["genre"], MOVIE_OF_THE_DAY_DATA["genre"])
+    const genreIntersection = intersection(
+      guessedMovieData["genre"],
+      MOVIE_OF_THE_DAY_DATA["genre"]
+    );
     if (genreIntersection.length) {
-      data["genre"] = genreIntersection
+      data["genre"][0] = genreIntersection;
+      data["genre"][1] = true;
+    } else {
+      data["genre"][1] = false;
     }
 
     // imdb
-    const imdbDiff = guessedMovieData["imdb"] - MOVIE_OF_THE_DAY_DATA["imdb"]
+    const imdbDiff =
+      parseFloat(guessedMovieData["imdb"]) -
+      parseFloat(MOVIE_OF_THE_DAY_DATA["imdb"]);
     if (imdbDiff > 0) {
-      data["imdb"] = ["DOWN", Math.abs(imdbDiff) <= 1 ? "CLOSE" : "FAR"]
+      data["imdb"][1] = ["DOWN", Math.abs(imdbDiff) <= 1 ? "CLOSE" : "FAR"];
     } else if (imdbDiff < 0) {
-      data["imdb"] = ["UP", Math.abs(imdbDiff) <= 1 ? "CLOSE" : "FAR"]
+      data["imdb"][1] = ["UP", Math.abs(imdbDiff) <= 1 ? "CLOSE" : "FAR"];
     } else {
-      data["imdb"] = ["CORRECT", "CORRECT"]
+      data["imdb"][1] = ["CORRECT", "CORRECT"];
     }
 
     // rating
-    const guessedRating = guessedMovieData["rating"]
-    const targetRating = MOVIE_OF_THE_DAY_DATA["rating"]
+    const guessedRating = guessedMovieData["rating"];
+    const targetRating = MOVIE_OF_THE_DAY_DATA["rating"];
     if (guessedRating === targetRating) {
-      data["rating"] = [true, "CORRECT"]
+      data["rating"][1] = "CORRECT";
     } else {
-      let isClose = false
+      let isClose = false;
       switch (guessedRating) {
         case "G":
-          isClose = targetRating === "PG"
-          break
+          isClose = targetRating === "PG";
+          break;
         case "PG":
-          isClose = ["G", "PG-13"].includes(targetRating)
-          break
+          isClose = ["G", "PG-13"].includes(targetRating);
+          break;
         case "PG-13":
-          isClose = ["PG", "R"].includes(targetRating)
-          break
+          isClose = ["PG", "R"].includes(targetRating);
+          break;
         case "R":
-          isClose = targetRating === "PG-13"
-          break
+          isClose = targetRating === "PG-13";
+          break;
         default:
-          break
+          break;
       }
-      data["rating"] = [false, isClose ? "CLOSE" : "FAR"]
+      data["rating"][1] = isClose ? "CLOSE" : "FAR";
     }
 
-    res.status(200).json({ success: false, data })
+    res.status(200).json({ correct: false, properties: data });
   }
 }
