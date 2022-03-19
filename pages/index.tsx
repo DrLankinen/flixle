@@ -13,7 +13,13 @@ const Home: NextPage = () => {
     <div>
       <Modal
         show={isHowToPlayModalOpen}
-        containerStyle={{ backgroundColor: "#1a1a1a", width: 700, height: 500 }}
+        containerStyle={{
+          backgroundColor: "#1a1a1a",
+          maxWidth: 700,
+          maxHeight: 500,
+          width: "90%",
+          height: "90%",
+        }}
         closeOnOuterClick
         onClose={() => setIsHowToPlayModalOpen(false)}
       >
