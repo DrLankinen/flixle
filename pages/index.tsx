@@ -16,9 +16,10 @@ const Home: NextPage = () => {
         containerStyle={{
           backgroundColor: "#1a1a1a",
           maxWidth: 700,
-          maxHeight: 500,
+          maxHeight: 570,
           width: "90%",
           height: "90%",
+          padding: 30
         }}
         closeOnOuterClick
         onClose={() => setIsHowToPlayModalOpen(false)}
@@ -61,6 +62,8 @@ const Home: NextPage = () => {
             cursor: "pointer",
             width: "fit-content",
             marginLeft: "auto",
+            paddingTop: 15,
+            paddingRight: 20
           }}
         >
           How to play?
