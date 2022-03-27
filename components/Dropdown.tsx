@@ -17,9 +17,9 @@ function Dropdown(props: Props) {
   const [selectedDropdown, setSelectedDropdown] = useState(0);
   const [dropdownOptions, setDropdownOptions] = useState<string[] | null>([]);
 
-  const makeGuess = useCallback(async () => {
-    if (dropdownOptions) {
-      const guess = dropdownOptions[selectedDropdown];
+  const makeGuess = useCallback(async (overrideSelected?: number) => {
+    if (dropdownOptions && dropdownOptions.length) {
+      const guess = dropdownOptions[overrideSelected ?? selectedDropdown];
       const res = await fetch(
         `/api/hello?guess=${guess}&motdIndex=${motdIndex}`
       );
@@ -73,8 +73,9 @@ function Dropdown(props: Props) {
         const filter = (name: string) =>
           name.toLowerCase().includes(inputText.toLowerCase());
         const filteredNames = SORTED_MOVIE_NAMES.filter(filter);
+        setSelectedDropdown(0)
         setDropdownOptions(filteredNames.length ? filteredNames : null);
-      }, 500);
+      }, 200);
     }
   }, [inputText]);
 
@@ -95,7 +96,10 @@ function Dropdown(props: Props) {
           dropdownOptions.map((text, index) => (
             <div
               key={text}
-              onClick={() => setSelectedDropdown(index)}
+              onClick={() => {
+                setSelectedDropdown(index)
+                makeGuess(index)
+              }}
               className="selectable"
               style={
                 selectedDropdown === index
