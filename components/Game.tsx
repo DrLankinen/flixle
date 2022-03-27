@@ -68,7 +68,7 @@ function Game() {
     setGuesses([]);
   }, []);
 
-  const guessedCorrectly = guesses.some((guess) => guess.correct);
+  const correctGuess = guesses.find((guess) => guess.correct);
 
   return (
     <>
@@ -87,7 +87,7 @@ function Game() {
       >
         <div className="game-complete-modal">
           <h4 className="modal-header">
-            You guessed the flixle, Interstellar! 🎉
+            You guessed the flixle, {correctGuess?.guess}! 🎉
           </h4>
           <div
             style={{ cursor: "pointer" }}
@@ -98,7 +98,7 @@ function Game() {
         </div>
       </Modal>
 
-      {!guessedCorrectly && guesses.length < 6 && (
+      {!correctGuess && guesses.length < 6 && (
         <Dropdown
           addGuess={(newGuess: Guess) =>
             setGuesses((prev) => [newGuess, ...prev])
@@ -107,18 +107,18 @@ function Game() {
         />
       )}
 
-      {guesses.length >= 6 && (
-        <>
+      {guesses.length >= 6 || !!correctGuess && (
+        <div style={{ textAlign: 'center', marginTop: 20 }}>
           <button
             onClick={resetGame}
             style={{ color: "orange", backgroundColor: "blue" }}
           >
-            Reset me!
+            Next Flixle
           </button>
-          {!guessedCorrectly && (
+          {!correctGuess && (
             <p>Correct anwer is: {MOVIE_OF_THE_DAY_NAMES[motdIndex]}</p>
           )}
-        </>
+        </div>
       )}
 
       <div className="guesses-section wf-section">
@@ -177,13 +177,12 @@ function Game() {
                 {/* Year */}
                 <div
                   id="w-node-_1449354b-fb1d-85c4-40fb-f39fc5e93ff9-f5768476"
-                  className={`category ${
-                    yearCorrectness === "CORRECT"
-                      ? "correct"
-                      : yearCorrectness === "CLOSE"
+                  className={`category ${yearCorrectness === "CORRECT"
+                    ? "correct"
+                    : yearCorrectness === "CLOSE"
                       ? "close"
                       : ""
-                  }`}
+                    }`}
                 >
                   <div className="category-name">Year</div>
                   <div className="category-value">
@@ -191,20 +190,19 @@ function Game() {
                     {yearDirection === "UP"
                       ? "↑"
                       : yearDirection === "DOWN"
-                      ? "↓"
-                      : ""}
+                        ? "↓"
+                        : ""}
                   </div>
                 </div>
                 {/* iMDB */}
                 <div
                   id="w-node-dbe059b9-edf8-3e9d-0f10-2507a7796cba-f5768476"
-                  className={`category ${
-                    imdbCorrectness === "CORRECT"
-                      ? "correct"
-                      : imdbCorrectness === "CLOSE"
+                  className={`category ${imdbCorrectness === "CORRECT"
+                    ? "correct"
+                    : imdbCorrectness === "CLOSE"
                       ? "close"
                       : ""
-                  }`}
+                    }`}
                 >
                   <div className="category-name">iMDB</div>
                   <div className="category-value">
@@ -212,20 +210,19 @@ function Game() {
                     {imdbDirection === "UP"
                       ? "↑"
                       : imdbDirection === "DOWN"
-                      ? "↓"
-                      : ""}
+                        ? "↓"
+                        : ""}
                   </div>
                 </div>
                 {/* Rating */}
                 <div
                   id="w-node-_7e6c412a-4a97-706a-7709-ddb318e41286-f5768476"
-                  className={`category ${
-                    ratingCorrectness === "CORRECT"
-                      ? "correct"
-                      : ratingCorrectness === "CLOSE"
+                  className={`category ${ratingCorrectness === "CORRECT"
+                    ? "correct"
+                    : ratingCorrectness === "CLOSE"
                       ? "close"
                       : ""
-                  }`}
+                    }`}
                 >
                   <div className="category-name">Film Rating</div>
                   <div className="category-value">{rating}</div>
