@@ -107,7 +107,7 @@ function Game() {
         />
       )}
 
-      {guesses.length >= 6 || !!correctGuess && (
+      {(guesses.length >= 6 || !!correctGuess) && (
         <div style={{ textAlign: 'center', marginTop: 20 }}>
           <button
             onClick={resetGame}
