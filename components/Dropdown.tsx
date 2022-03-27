@@ -6,6 +6,7 @@ const SORTED_MOVIE_NAMES = MOVIE_NAMES_JSON.sort();
 let getOptions: ReturnType<typeof setTimeout> | null = null;
 
 interface Props {
+  // eslint-disable-next-line no-unused-vars
   addGuess: (newGuess: Guess) => void;
   motdIndex: number;
 }
