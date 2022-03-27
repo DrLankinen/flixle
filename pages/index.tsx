@@ -75,7 +75,9 @@ const Home: NextPage = () => {
           </div>
         </div>
         <Game />
-        <div className="footer-section wf-section">
+        <div className="footer-section wf-section" style={{
+          height: "calc(100% - 20px)"
+        }}>
           <div className="footer-text">
             2022 - An experiment by{" "}
             <a
