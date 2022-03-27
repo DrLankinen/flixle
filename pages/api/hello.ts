@@ -10,6 +10,7 @@ interface Data {
   genre: string[];
   imdb: string;
   rating: string;
+  img: string;
 }
 interface Json {
   [name: string]: Data;
@@ -25,6 +26,7 @@ export type CorrectData = {
   genre: [string[], boolean];
   imdb: [number, [UP_DOWN_CORRECT, CLOSE_FAR_CORRECT]];
   rating: [string, CLOSE_FAR_CORRECT];
+  img: string;
 };
 
 const DATA: Json = DATA_JSON;
@@ -56,6 +58,7 @@ export default function handler(
     genre: [guessedMovieData["genre"], true],
     imdb: [parseFloat(guessedMovieData["imdb"]), ["CORRECT", "CORRECT"]],
     rating: [guessedMovieData["rating"], "CORRECT"],
+    img: `https://image.tmdb.org/t/p/w500${guessedMovieData["img"]}`
   };
 
   const isCorrectGuess = guess === movieOfTheDayName;

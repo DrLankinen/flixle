@@ -96,6 +96,11 @@ function Game() {
             <Image src={closeIcon} loading="lazy" width="24" alt="close icon" />
           </div>
         </div>
+        {correctGuess?.properties.img && (
+          <div style={{ textAlign: "center" }}>
+            <Image src={correctGuess?.properties.img} loading="lazy" alt="poster" width="200" height="300" />
+          </div>
+        )}
       </Modal>
 
       {!correctGuess && guesses.length < 6 && (
