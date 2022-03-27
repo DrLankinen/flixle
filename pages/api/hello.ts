@@ -51,7 +51,7 @@ export default function handler(
 
   const data: CorrectData = {
     director: [guessedMovieData["director"], true],
-    cast: [guessedMovieData["cast"], true],
+    cast: [guessedMovieData["cast"].slice(0, 5), true],
     year: [guessedMovieData["year"], ["CORRECT", "CORRECT"]],
     genre: [guessedMovieData["genre"], true],
     imdb: [parseFloat(guessedMovieData["imdb"]), ["CORRECT", "CORRECT"]],
@@ -80,7 +80,7 @@ export default function handler(
       movieOfTheDayData["cast"]
     );
     if (castIntersection.length) {
-      data["cast"][0] = castIntersection;
+      data["cast"][0] = castIntersection.slice(0, 5);
       data["cast"][1] = true;
     } else {
       data["cast"][1] = false;
